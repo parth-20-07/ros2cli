@@ -129,6 +129,9 @@ def create_package_environment(package, destination_directory):
     if package.get_build_type() == 'ament_python':
         print('creating source folder')
         source_directory = _create_folder(package.name, package_directory)
+    if package.get_build_type() == 'ament_cargo':
+        print('creating source folder')
+        source_directory = _create_folder('src', package_directory)
 
     return package_directory, source_directory, include_directory
 
@@ -313,3 +316,42 @@ def populate_cpp_library(package, source_directory, include_directory, cpp_libra
         include_directory,
         'visibility_control.h',
         visibility_config)
+
+
+def populate_ament_cargo(package, package_directory, rust_node_name, rust_library_name):
+    cargo_toml_config = {
+        'package_name': package.name.replace('_', '-'),
+        'dependencies': [str(dep).replace('_', '-') for dep in package.build_depends],
+    }
+    _create_template_file(
+        'ament_cargo',
+        'Cargo.toml.em',
+        package_directory,
+        'Cargo.toml',
+        cargo_toml_config)
+
+
+def populate_rust_node(package, source_directory, rust_node_name):
+    main_rs_config = {
+        'package_name': package.name,
+        'node_name': rust_node_name,
+    }
+    _create_template_file(
+        'ament_cargo',
+        'main.rs.em',
+        source_directory,
+        'main.rs',
+        main_rs_config)
+
+
+def populate_rust_library(package, source_directory, rust_library_name):
+    lib_rs_config = {
+        'package_name': package.name,
+        'library_name': rust_library_name,
+    }
+    _create_template_file(
+        'ament_cargo',
+        'lib.rs.em',
+        source_directory,
+        'lib.rs',
+        lib_rs_config)
